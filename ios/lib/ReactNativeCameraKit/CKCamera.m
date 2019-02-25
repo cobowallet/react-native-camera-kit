@@ -192,6 +192,15 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
     return self;
 }
 
+
+-(void)setOnReadCode:(RCTDirectEventBlock)onReadCode {
+    _onReadCode = onReadCode;
+    if(self.onReadCode){
+        [self setupCaptionSession];
+    }
+}
+
+
 -(void)setCameraOptions:(NSDictionary *)cameraOptions {
     _cameraOptions = cameraOptions;
     
@@ -293,7 +302,7 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
         else {
             self.setupResult = CKSetupResultSessionConfigurationFailed;
         }
-        
+
         AVCaptureMetadataOutput * output = [[AVCaptureMetadataOutput alloc] init];
         if ([self.session canAddOutput:output]) {
             self.metadataOutput = output;
@@ -301,7 +310,7 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
             [self.metadataOutput setMetadataObjectsDelegate:self queue:dispatch_get_main_queue()];
             [self.metadataOutput setMetadataObjectTypes:[self.metadataOutput availableMetadataObjectTypes]];
         }
-        
+
         [self.session commitConfiguration];
 
     } );
@@ -804,7 +813,7 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 }
 
 +(CGSize)cropImageToPreviewSize:(UIImage*)image size:(CGSize)previewSize {
-    
+
     float imageToPreviewWidthScale = image.size.width/previewSize.width;
     float imageToPreviewHeightScale = image.size.width/previewSize.width;
     
@@ -1077,7 +1086,7 @@ didOutputMetadataObjects:(NSArray<__kindof AVMetadataObject *> *)metadataObjects
     for(AVMetadataObject *metadataObject in metadataObjects)
     {
         if ([metadataObject isKindOfClass:[AVMetadataMachineReadableCodeObject class]] && [self isSupportedBarCodeType:metadataObject.type]) {
-            
+
             AVMetadataMachineReadableCodeObject *code = (AVMetadataMachineReadableCodeObject*)[self.previewLayer transformedMetadataObjectForMetadataObject:metadataObject];
             if (self.onReadCode && code.stringValue && ![code.stringValue isEqualToString:self.codeStringValue]) {
                 self.onReadCode(@{@"codeStringValue": code.stringValue});
